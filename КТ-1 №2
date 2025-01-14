@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица случайных чисел</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 10px;
+            font-size: 18px;
+        }
+        .orange {
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+
+    <table id="randomTable"></table>
+    <button onclick="addRandomNumber()">Добавить число</button>
+
+    <script>
+        // Изначальный массив случайных чисел
+        let randomNumbers = generateRandomNumbers();
+
+        // Функция для генерации массива из 30 случайных чисел от 0 до 99
+        function generateRandomNumbers() {
+            const numbers = [];
+            for (let i = 0; i < 30; i++) {
+                numbers.push(Math.floor(Math.random() * 100));
+            }
+            return numbers;
+        }
+
+        // Функция для создания таблицы
+        function createTable(numbers) {
+            const table = document.getElementById('randomTable');
+            table.innerHTML = ''; // Очищаем таблицу перед добавлением
+
+            let index = 0;
+
+            for (let row = 0; row < 5; row++) {
+                const tr = document.createElement('tr'); // Создаем строку таблицы
+
+                for (let col = 0; col < 6; col++) {
+                    const td = document.createElement('td'); // Создаем ячейку таблицы
+                    td.textContent = numbers[index]; // Заполняем ячейку числом
+
+                    // Если число 50 или больше, добавляем класс для окраски
+                    if (numbers[index] >= 50) {
+                        td.classList.add('orange');
+                    }
+
+                    tr.appendChild(td); // Добавляем ячейку в строку
+                    index++;
+                }
+
+                table.appendChild(tr); // Добавляем строку в таблицу
+            }
+        }
+
+        // Функция для добавления случайного числа в таблицу
+        function addRandomNumber() {
+            const newNumber = Math.floor(Math.random() * 100); // Генерируем новое число
+            randomNumbers.push(newNumber); // Добавляем его в массив
+
+            // Обновляем таблицу, если в ней уже есть 30 чисел, удаляем первый
+            if (randomNumbers.length > 30) {
+                randomNumbers.shift(); // Удаляем первое число, чтобы сохранить размер 30
+            }
+
+            createTable(randomNumbers); // Пересоздаем таблицу с обновленным массивом
+        }
+
+        // Изначально создаем таблицу с первичными случайными числами
+        createTable(randomNumbers);
+    </script>
+
+</body>
+</html>
