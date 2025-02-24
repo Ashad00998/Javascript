@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выпадающее меню</title>
+</head>
+<body>
+    <div id="menu-container"></div>
+
+    <script>
+        // Создаем структуру меню
+        const menuData = [
+            {
+                title: "Фильмы",
+                submenu: [
+                    {
+                        title: "Отечественные фильмы",
+                        submenu: [
+                            { title: "Детективы", href: "https://www.kinopoisk.ru/lists/movies/genre--mystery/country--2/?b=series" },
+                            { title: "Научная фантастика", href: "https://www.livelib.ru/genre/Отечественная-фантастика/top" },
+                            { title: "Исторические", href: "https://www.kinopoisk.ru/lists/movies/genre--history/country--2/" }
+                        ]
+                    },
+                    {
+                        title: "Зарубежные фильмы",
+                        submenu: [
+                            { title: "Детективы", href: "https://www.kinopoisk.ru/lists/movies/genre--mystery/country--1/?b=films" },
+                            { title: "Научная фантастика", href: "https://www.kinopoisk.ru/lists/movies/top_100_scifi_by_total_scifi_online/" },
+                            { title: "Исторические", href: "https://www.kinopoisk.ru/lists/movies/genre--history/?b=films" }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "DVD",
+                submenu: [
+                    {
+                        title: "Отечественные фильмы",
+                        submenu: [
+                            { title: "Детективы", href: "https://www.kinopoisk.ru/lists/movies/genre--mystery/country--2/?b=series" },
+                            { title: "Научная фантастика", href: "https://www.livelib.ru/genre/Отечественная-фантастика/top" },
+                            { title: "Исторические", href: "https://www.kinopoisk.ru/lists/movies/genre--history/country--2/" }
+                        ]
+                    },
+                    {
+                        title: "Зарубежные фильмы",
+                        submenu: [
+                            { title: "Детективы", href: "https://www.kinopoisk.ru/lists/movies/genre--mystery/country--1/?b=films" },
+                            { title: "Научная фантастика", href: "https://www.kinopoisk.ru/lists/movies/top_100_scifi_by_total_scifi_online/" },
+                            { title: "Исторические", href: "https://www.kinopoisk.ru/lists/movies/genre--history/?b=films" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Функция для создания элемента меню
+        function createMenuItem(item) {
+            const li = document.createElement("li");
+            if (item.submenu) {
+                li.classList.add("has-submenu");
+                const a = document.createElement("a");
+                a.textContent = item.title;
+                a.href = "#";
+                li.appendChild(a);
+
+                const ul = document.createElement("ul");
+                ul.classList.add("submenu");
+                item.submenu.forEach(subItem => {
+                    ul.appendChild(createMenuItem(subItem));
+                });
+                li.appendChild(ul);
+
+                a.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    li.classList.toggle("open");
+                    ul.style.maxHeight = li.classList.contains("open") ? ul.scrollHeight + "px" : "0";
+                });
+            } else {
+                const a = document.createElement("a");
+                a.textContent = item.title;
+                a.href = item.href;
+                li.appendChild(a);
+            }
+            return li;
+        }
+
+        // Создаем меню
+        const menuContainer = document.getElementById("menu-container");
+        const ul = document.createElement("ul");
+        ul.classList.add("menu");
+        menuData.forEach(item => {
+            ul.appendChild(createMenuItem(item));
+        });
+        menuContainer.appendChild(ul);
+
+        // Добавляем стили через JavaScript
+        const style = document.createElement("style");
+        style.textContent = `
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+
+            #menu-container {
+                background-color: #fff;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+                max-width: 600px; /* Увеличили ширину */
+                width: 100%;
+            }
+
+            .menu, .submenu {
+                list-style-type: none;
+                padding-left: 0;
+                margin: 0;
+            }
+
+            .menu > li {
+                margin: 15px 0; /* Увеличили отступы */
+            }
+
+            .menu > li > a {
+                text-decoration: none;
+                color: #333;
+                padding: 15px 25px; /* Увеличили отступы */
+                display: block;
+                border-radius: 8px;
+                transition: background-color 0.3s, color 0.3s;
+                font-weight: 500;
+                background: linear-gradient(145deg, #f9f9f9, #ffffff);
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                font-size: 16px; /* Увеличили размер шрифта */
+            }
+
+            .menu > li > a:hover {
+                background: linear-gradient(145deg, #e0e0e0, #f0f0f0);
+                color: #000;
+            }
+
+            .submenu {
+                display: block;
+                max-height: 0;
+                overflow: hidden;
+                padding-left: 25px; /* Увеличили отступ */
+                background-color: #f9f9f9;
+                border-left: 3px solid #db9fd1;
+                margin-top: 10px; /* Увеличили отступ */
+                transition: max-height 0.5s ease-out, padding 0.3s ease-out;
+            }
+
+            .has-submenu > a {
+                cursor: pointer;
+                position: relative;
+            }
+
+            .has-submenu > a::after {
+                content: " ▼";
+                position: absolute;
+                right: 20px; /* Увеличили отступ */
+                font-size: 0.8em;
+                transition: transform 0.3s;
+            }
+
+            .has-submenu.open > a::after {
+                content: " ▲";
+                transform: rotate(180deg);
+            }
+
+            .submenu li a {
+                background-color: #f0f0f0;
+                transition: background-color 0.3s, color 0.3s;
+                padding: 12px 20px; /* Увеличили отступы */
+                border-radius: 6px;
+                margin: 8px 0; /* Увеличили отступы */
+                display: block;
+                color: #555;
+                font-size: 14px; /* Увеличили размер шрифта */
+            }
+
+            .submenu li a:hover {
+                background-color: #e0e0e0;
+                color: #000;
+            }
+
+            /* Добавляем прокрутку для подменю, если оно слишком большое */
+            .submenu {
+                max-height: 300px; /* Ограничиваем высоту */
+                overflow-y: auto; /* Добавляем вертикальную прокрутку */
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
