@@ -4,91 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Slider</title>
-   
 </head>
 <body>
+    <script>
+        function createSlider(container, min, max, initialValue, type) {
+            // Создаём трек (основную линию слайдера)
+            const track = document.createElement("div");
+            track.style.width = "100%";
+            track.style.height = "4px";
+            track.style.position = "absolute";
+            track.style.top = "50%";
+            track.style.transform = "translateY(-50%)";
+            container.appendChild(track);
 
-<div class="slider-container">
-    <div class="slider-track"></div>
-    <div class="slider-thumb"></div>
-    <div class="slider-value">50</div>
-</div>
+            // Создаём бегунок (thumb)
+            const thumb = document.createElement("div");
+            thumb.style.width = "20px";
+            thumb.style.height = "20px";
+            thumb.style.position = "absolute";
+            thumb.style.top = "50%";
+            thumb.style.transform = "translate(-50%, -50%)";
+            thumb.style.cursor = "pointer";
+            container.appendChild(thumb);
 
-<script>
-    const sliderContainer = document.querySelector('.slider-container');
-    const sliderTrack = document.querySelector('.slider-track');
-    const sliderThumb = document.querySelector('.slider-thumb');
-    const sliderValue = document.querySelector('.slider-value');
+            // Добавляем счётчики
+            const currentCounter = document.createElement("div");
+            currentCounter.style.position = "absolute";
+            currentCounter.style.top = "-30px";
+            currentCounter.style.left = "50%";
+            currentCounter.style.transform = "translateX(-50%)";
+            currentCounter.style.fontSize = "16px";
+            currentCounter.style.fontWeight = "bold";
+            container.appendChild(currentCounter);
 
-    let isDragging = false;
+            const minCounter = document.createElement("div");
+            minCounter.style.position = "absolute";
+            minCounter.style.top = "-30px";
+            minCounter.style.left = "0%";
+            minCounter.style.fontSize = "16px";
+            minCounter.style.fontWeight = "bold";
+            container.appendChild(minCounter);
 
-    sliderThumb.addEventListener('mousedown', (e) => {
-        isDragging = true;
-    });
+            const maxCounter = document.createElement("div");
+            maxCounter.style.position = "absolute";
+            maxCounter.style.top = "-30px";
+            maxCounter.style.right = "0%";
+            maxCounter.style.fontSize = "16px";
+            maxCounter.style.fontWeight = "bold";
+            container.appendChild(maxCounter);
 
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            const rect = sliderTrack.getBoundingClientRect();
-            let newPosition = e.clientX - rect.left;
+            // Добавляем счётчики для делений (divisors)
+            if (type === "divisor") {
+                for (let i = 1; i <= 5; i++) {
+                    const divisor = document.createElement("div");
+                    divisor.style.width = "10px";
+                    divisor.style.height = "10px";
+                    divisor.style.background = "blue";
+                    divisor.style.position = "absolute";
+                    divisor.style.left = `${(i / 5) * 100}%`;
+                    divisor.style.top = "50%";
+                    divisor.style.transform = "translate(-50%, -50%)";
+                    container.appendChild(divisor);
 
-            if (newPosition < 0) {
-                newPosition = 0;
-            } else if (newPosition > rect.width) {
-                newPosition = rect.width;
+                    const divisorCounter = document.createElement("div");
+                    divisorCounter.style.position = "absolute";
+                    divisorCounter.style.top = "-30px";
+                    divisorCounter.style.left = `${(i / 5) * 100}%`;
+                    divisorCounter.style.transform = "translateX(-50%)";
+                    divisorCounter.style.fontSize = "16px";
+                    divisorCounter.style.fontWeight = "bold";
+                    divisorCounter.textContent = Math.round((max - min) * (i / 5) + min);
+                    container.appendChild(divisorCounter);
+                }
             }
 
-            const percent = (newPosition / rect.width) * 100;
-            sliderThumb.style.left = `${percent}%`;
-            sliderValue.textContent = Math.round(percent);
-        }
-    });
+            // Функция изменения цвета при движении
+            function updateColor(percent) {
+                if (type === "track") {
+                    track.style.background = `linear-gradient(to right, green ${percent * 100}%, pink ${percent * 100}%)`;
+                    thumb.style.background = `rgb(${255 - percent * 255}, ${percent * 255}, 0)`;
+                } else if (type === "divisor") {
+                    track.style.background = `rgb(0, 0, ${percent * 255})`;
+                    thumb.style.background = `rgb(0, 0, ${255 - percent * 255})`;
+                } else if (type === "thumb") {
+                    track.style.background = `rgb(${percent * 255}, 0, 0)`;
+                    thumb.style.borderBottom = `15px solid rgb(${255 - percent * 255}, 0, 0)`;
+                } else if (type === "tick") {
+                    track.style.background = `rgb(${percent * 200}, ${percent * 200}, ${percent * 200})`;
+                    thumb.style.background = `rgb(0, 0, ${255 - percent * 255})`;
+                }
+            }
 
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-     // Добавляем стили через JavaScript
-     const style = document.createElement("style");
-        style.textContent = `
-        
-        .slider-container {
-            position: relative;
-            width: 300px;
-            margin: 50px auto;
+            // Изменяем форму бегунка для типа "thumb"
+            if (type === "thumb") {
+                thumb.style.width = "0";
+                thumb.style.height = "0";
+                thumb.style.borderLeft = "10px solid transparent";
+                thumb.style.borderRight = "10px solid transparent";
+                thumb.style.borderBottom = "15px solid red";
+            }
+
+            // Логика перетаскивания бегунка
+            let dragging = false;
+            thumb.addEventListener("mousedown", () => { dragging = true; });
+            document.addEventListener("mouseup", () => { dragging = false; });
+            document.addEventListener("mousemove", (event) => {
+                if (!dragging) return;
+                let rect = container.getBoundingClientRect();
+                let x = event.clientX - rect.left;
+                let percent = Math.min(1, Math.max(0, x / rect.width));
+                thumb.style.left = `${percent * 100}%`;
+                updateColor(percent);
+                currentCounter.textContent = Math.round((max - min) * percent + min);
+            });
+
+            // Устанавливаем начальное положение бегунка
+            let initialPercent = (initialValue - min) / (max - min);
+            thumb.style.left = `${initialPercent * 100}%`;
+            updateColor(initialPercent);
+            currentCounter.textContent = initialValue;
+            minCounter.textContent = min;
+            maxCounter.textContent = max;
         }
 
-        .slider-track {
-            width: 100%;
-            height: 8px;
-            background-color: #ddd;
-            border-radius: 4px;
-            position: relative;
-        }
-
-        .slider-thumb {
-            width: 20px;
-            height: 20px;
-            background-color: #007bff;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-        }
-
-        .slider-value {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #007bff;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-             `;
-             document.head.appendChild(style);
-</script>
-
+        // Создаём 4 разных слайдера с разными стилями
+        const types = ["track", "divisor", "thumb", "tick"];
+        types.forEach((type, index) => {
+            const container = document.createElement("div");
+            container.style.position = "relative";
+            container.style.width = "300px";
+            container.style.height = "50px";
+            container.style.margin = "50px";
+            document.body.appendChild(container);
+            createSlider(container, 0, 100, 60, type);
+        });
+    </script>
 </body>
 </html>
