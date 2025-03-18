@@ -112,10 +112,16 @@
         cardMiniature.style.flexDirection = "column";
         cardMiniature.style.justifyContent = "space-between";
 
-        const cardLogo = document.createElement("div");
+        const cardLogo = document.createElement("img");
         cardLogo.id = 'cardLogo';
-        cardLogo.style.fontSize = "24px";
-        cardLogo.style.fontWeight = "bold";
+        cardLogo.style.width = "100px"; // Увеличиваем ширину логотипа
+        cardLogo.style.height = "auto"; // Автоматическая высота
+
+        const bankNamePreview = document.createElement("div");
+        bankNamePreview.id = 'bankNamePreview';
+        bankNamePreview.style.fontSize = "20px"; // Размер шрифта для названия банка
+        bankNamePreview.style.fontWeight = "bold"; // Жирный шрифт
+        bankNamePreview.style.marginBottom = "10px"; // Отступ снизу
 
         const cardNumberPreview = document.createElement("div");
         cardNumberPreview.id = 'cardNumberPreview';
@@ -135,11 +141,12 @@
 
         const cardImage = document.createElement("img");
         cardImage.id = 'cardImage';
-        cardImage.style.width = "50px"; // Устанавливаем ширину изображения
+        cardImage.style.width = "100px"; // Увеличиваем ширину изображения
         cardImage.style.height = "auto"; // Автоматическая высота
         cardImage.style.marginTop = "10px"; // Отступ сверху
 
-        cardMiniature.appendChild(cardLogo);
+        cardMiniature.appendChild(bankNamePreview); // Добавляем название банка
+        cardMiniature.appendChild(cardLogo); // Добавляем логотип
         cardMiniature.appendChild(cardNumberPreview);
         cardMiniature.appendChild(cardHolderPreview);
         cardMiniature.appendChild(cardExpiryPreview);
@@ -148,9 +155,46 @@
         container.appendChild(cardPreview);
         document.body.appendChild(container);
 
+        // Создаем таблицу для отображения данных о картах
+        const tableContainer = document.createElement("div");
+        const table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.marginTop = "20px";
+        table.style.borderCollapse = "collapse";
+
+        const tableHeader = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const headers = ["Название банка", "Тип карты", "Номер карты", "Имя держателя", "Срок действия"];
+        headers.forEach(headerText => {
+            const th = document.createElement("th");
+            th.textContent = headerText;
+            th.style.border = "1px solid #ddd";
+            th.style.padding = "8px";
+            th.style.textAlign = "left";
+            headerRow.appendChild(th);
+        });
+        tableHeader.appendChild(headerRow);
+        table.appendChild(tableHeader);
+
+        const tableBody = document.createElement("tbody");
+        table.appendChild(tableBody);
+        tableContainer.appendChild(table);
+        document.body.appendChild(tableContainer);
+
+        // Объект с логотипами банков
+        const bankLogos = {
+            "Сбер": "https://www.lizingperm.ru/upload/iblock/5fe/5fed0f74c2650ff551e8c61aec685a26.jpg",
+            "Тинькофф": "https://iy.kommersant.ru/Issues.photo/NEWS/2024/06/05/KMO_111307_57400_1_t218_091750.jpg",
+            "Альфа-Банк": "https://whccska.ru/wp-content/uploads/2024/03/111.png",
+            "ВТБ": "https://www.vtb.ru/media-files/vtb.ru/shared/images/icon/favicon_512x512px.webp",
+
+        };
+
         // Обновление миниатюры карты в реальном времени
         const updateCardPreview = () => {
-            cardLogo.textContent = bankName.input.value || 'Название банка';
+            const bankValue = bankName.input.value.trim();
+            bankNamePreview.textContent = bankValue || 'Название банка'; // Устанавливаем название банка
+            cardLogo.src = bankLogos[bankValue] || ''; // Устанавливаем логотип банка
             cardNumberPreview.textContent = formatCardNumber(cardNumber.input.value) || 'XXXX XXXX XXXX XXXX';
             cardHolderPreview.textContent = cardHolder.input.value.toUpperCase() || 'ИМЯ ДЕРЖАТЕЛЯ';
             cardExpiryPreview.textContent = expiryDate.input.value ? expiryDate.input.value.slice(5, 7) + '/' + expiryDate.input.value.slice(2, 4) : 'ММ/ГГ';
@@ -159,15 +203,15 @@
             switch (cardTypeSelect.value) {
                 case 'visa':
                     cardMiniature.style.backgroundColor = '#1a1f71';
-                    cardImage.src = 'https://цск.рф/image/catalog/Visa.png'; // Изображение Visa
+                    cardImage.src = 'https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png'; // Прямая ссылка на изображение Visa
                     break;
                 case 'mastercard':
                     cardMiniature.style.backgroundColor = '#eb001b';
-                    cardImage.src = 'https://i.pinimg.com/originals/0a/b9/21/0ab92153e17bc3424a23487f02a81ca8.jpg'; // Изображение MasterCard
+                    cardImage.src = 'https://adindex.ru/files2/news/2019_01/230401_5.jpg?ts='; // Прямая ссылка на изображение MasterCard
                     break;
                 case 'мир':
                     cardMiniature.style.backgroundColor = '#00FF7F';
-                    cardImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Mir-logo.SVG.svg/1024px-Mir-logo.SVG.svg.png'; // Изображение Мир
+                    cardImage.src = 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Mir-logo.SVG.svg'; // Прямая ссылка на изображение Мир
                     break;
                 default:
                     cardMiniature.style.backgroundColor = '#007bff';
@@ -175,16 +219,45 @@
             }
         };
 
-        // Добавляем обработчики событий для обновления карточки
+        // Обработчик отправки формы
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Предотвращаем стандартное поведение формы
+
+            // Создаем новую строку таблицы
+            const newRow = document.createElement("tr");
+
+            const data = [
+                bankName.input.value,
+                cardTypeSelect.value.charAt(0).toUpperCase() + cardTypeSelect.value.slice(1),
+                formatCardNumber(cardNumber.input.value),
+                cardHolder.input.value,
+                expiryDate.input.value ? expiryDate.input.value.slice(5, 7) + '/' + expiryDate.input.value.slice(2, 4) : 'ММ/ГГ'
+            ];
+
+            data.forEach(text => {
+                const td = document.createElement("td");
+                td.textContent = text;
+                td.style.border = "1px solid #ddd";
+                td.style.padding = "8px";
+                newRow.appendChild(td); // Исправлено здесь
+            });
+
+            tableBody.appendChild(newRow);
+            form.reset(); // Сбросить форму после добавления
+            updateCardPreview(); // Обновить предварительный просмотр карты
+        });
+
+        // Форматирование номера карты
+        const formatCardNumber = (number) => {
+            return number.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim(); // Форматирование номера карты
+        };
+
+        // Обновление миниатюры карты при изменении значений в форме
         bankName.input.addEventListener('input', updateCardPreview);
         cardTypeSelect.addEventListener('change', updateCardPreview);
         cardNumber.input.addEventListener('input', updateCardPreview);
         cardHolder.input.addEventListener('input', updateCardPreview);
         expiryDate.input.addEventListener('input', updateCardPreview);
-
-        function formatCardNumber(number) {
-            return number.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
-        }
     </script>
 </body>
 </html>
