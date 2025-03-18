@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Банковская карта</title>
+</head>
+<body>
+    <script>
+        // Создаем основной контейнер
+        const body = document.createElement("div");
+        body.style.fontFamily = "Arial, sans-serif";
+        body.style.background = "#f4f4f4";
+        body.style.margin = "30";
+        body.style.padding = "100px";
+
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.justifyContent = "space-between";
+        container.style.padding = "50px";
+
+        // Создаем контейнер для формы
+        const formContainer = document.createElement("div");
+        formContainer.style.width = "50%";
+
+        // Создаем форму
+        const form = document.createElement("form");
+        form.style.display = "flex";
+        form.style.flexDirection = "column";
+
+        // Создаем элементы формы
+        const createLabelAndInput = (labelText, inputType, inputId) => {
+            const label = document.createElement("label");
+            label.textContent = labelText;
+            label.setAttribute("for", inputId);
+
+            const input = document.createElement("input");
+            input.type = inputType;
+            input.id = inputId;
+            input.style.marginTop = "5px";
+            input.style.padding = "10px";
+            input.style.fontSize = "16px";
+            input.required = true;
+
+            return { label, input };
+        };
+
+        const bankName = createLabelAndInput("Название банка:", "text", "bankName");
+        const cardType = createLabelAndInput("Тип платежной системы:", "select", "cardType");
+        const cardNumber = createLabelAndInput("Номер карты:", "text", "cardNumber");
+        const cardHolder = createLabelAndInput("Имя держателя карты:", "text", "cardHolder");
+        const expiryDate = createLabelAndInput("Месяц и год окончания:", "month", "expiryDate");
+
+        // Добавляем элементы в форму
+        form.appendChild(bankName.label);
+        form.appendChild(bankName.input);
+        
+        const cardTypeSelect = document.createElement("select");
+        cardTypeSelect.id = "cardType";
+        cardTypeSelect.style.marginTop = "5px";
+        cardTypeSelect.style.padding = "10px";
+        cardTypeSelect.style.fontSize = "16px";
+        cardTypeSelect.required = true;
+
+        const cardTypes = ["Visa", "MasterCard", "Мир"];
+        cardTypes.forEach(type => {
+            const option = document.createElement("option");
+            option.value = type.toLowerCase();
+            option.textContent = type;
+            cardTypeSelect.appendChild(option);
+        });
+
+        form.appendChild(cardType.label);
+        form.appendChild(cardTypeSelect);
+        form.appendChild(cardNumber.label);
+        form.appendChild(cardNumber.input);
+        form.appendChild(cardHolder.label);
+        form.appendChild(cardHolder.input);
+        form.appendChild(expiryDate.label);
+        form.appendChild(expiryDate.input);
+
+        // Создаем кнопку
+        const submitButton = document.createElement("button");
+        submitButton.type = "submit";
+        submitButton.textContent = "Добавить карту";
+        submitButton.style.marginTop = "10px";
+        submitButton.style.padding = "10px";
+        submitButton.style.fontSize = "16px";
+        submitButton.style.backgroundColor = "#28a745";
+        submitButton.style.color = "white";
+        submitButton.style.border = "none";
+        submitButton.style.cursor = "pointer";
+
+        form.appendChild(submitButton);
+        formContainer.appendChild(form);
+        container.appendChild(formContainer);
+
+        // Создаем карточку для предварительного просмотра
+        const cardPreview = document.createElement("div");
+        cardPreview.className = 'card-preview';
+
+        const cardMiniature = document.createElement("div");
+        cardMiniature.id = 'cardMiniature';
+        cardMiniature.style.width = "150%";
+        cardMiniature.style.height = "250px";
+        cardMiniature.style.marginLeft = "-120%"; // Сдвигаем карточку влево
+        cardMiniature.style.backgroundColor = "#007bff";
+        cardMiniature.style.color = "white";
+        cardMiniature.style.borderRadius = "10px";
+        cardMiniature.style.padding = "20px";
+        cardMiniature.style.display = "flex";
+        cardMiniature.style.flexDirection = "column";
+        cardMiniature.style.justifyContent = "space-between";
+
+        const cardLogo = document.createElement("div");
+        cardLogo.id = 'cardLogo';
+        cardLogo.style.fontSize = "24px";
+        cardLogo.style.fontWeight = "bold";
+
+        const cardNumberPreview = document.createElement("div");
+        cardNumberPreview.id = 'cardNumberPreview';
+        cardNumberPreview.style.fontSize = "18px";
+        cardNumberPreview.style.letterSpacing = "2px";
+        cardNumberPreview.textContent = 'XXXX XXXX XXXX XXXX';
+
+        const cardHolderPreview = document.createElement("div");
+        cardHolderPreview.id = 'cardHolderPreview';
+        cardHolderPreview.style.fontSize = "14px";
+        cardHolderPreview.textContent = 'ИМЯ ДЕРЖАТЕЛЯ';
+
+        const cardExpiryPreview = document.createElement("div");
+        cardExpiryPreview.id = 'cardExpiryPreview';
+        cardExpiryPreview.style.fontSize = "14px";
+        cardExpiryPreview.textContent = 'ММ/ГГ';
+
+        const cardImage = document.createElement("img");
+        cardImage.id = 'cardImage';
+        cardImage.style.width = "50px"; // Устанавливаем ширину изображения
+        cardImage.style.height = "auto"; // Автоматическая высота
+        cardImage.style.marginTop = "10px"; // Отступ сверху
+
+        cardMiniature.appendChild(cardLogo);
+        cardMiniature.appendChild(cardNumberPreview);
+        cardMiniature.appendChild(cardHolderPreview);
+        cardMiniature.appendChild(cardExpiryPreview);
+        cardMiniature.appendChild(cardImage); // Добавляем изображение карточки
+        cardPreview.appendChild(cardMiniature);
+        container.appendChild(cardPreview);
+        document.body.appendChild(container);
+
+        // Обновление миниатюры карты в реальном времени
+        const updateCardPreview = () => {
+            cardLogo.textContent = bankName.input.value || 'Название банка';
+            cardNumberPreview.textContent = formatCardNumber(cardNumber.input.value) || 'XXXX XXXX XXXX XXXX';
+            cardHolderPreview.textContent = cardHolder.input.value.toUpperCase() || 'ИМЯ ДЕРЖАТЕЛЯ';
+            cardExpiryPreview.textContent = expiryDate.input.value ? expiryDate.input.value.slice(5, 7) + '/' + expiryDate.input.value.slice(2, 4) : 'ММ/ГГ';
+
+            // Изменение цвета миниатюры в зависимости от типа карты и установка изображения
+            switch (cardTypeSelect.value) {
+                case 'visa':
+                    cardMiniature.style.backgroundColor = '#1a1f71';
+                    cardImage.src = 'https://цск.рф/image/catalog/Visa.png'; // Изображение Visa
+                    break;
+                case 'mastercard':
+                    cardMiniature.style.backgroundColor = '#eb001b';
+                    cardImage.src = 'https://i.pinimg.com/originals/0a/b9/21/0ab92153e17bc3424a23487f02a81ca8.jpg'; // Изображение MasterCard
+                    break;
+                case 'мир':
+                    cardMiniature.style.backgroundColor = '#00FF7F';
+                    cardImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Mir-logo.SVG.svg/1024px-Mir-logo.SVG.svg.png'; // Изображение Мир
+                    break;
+                default:
+                    cardMiniature.style.backgroundColor = '#007bff';
+                    cardImage.src = ''; // Сбросить изображение, если тип карты не выбран
+            }
+        };
+
+        // Добавляем обработчики событий для обновления карточки
+        bankName.input.addEventListener('input', updateCardPreview);
+        cardTypeSelect.addEventListener('change', updateCardPreview);
+        cardNumber.input.addEventListener('input', updateCardPreview);
+        cardHolder.input.addEventListener('input', updateCardPreview);
+        expiryDate.input.addEventListener('input', updateCardPreview);
+
+        function formatCardNumber(number) {
+            return number.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+        }
+    </script>
+</body>
+</html>
